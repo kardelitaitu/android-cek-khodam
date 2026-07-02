@@ -69,13 +69,6 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.random.Random
 
-data class WarpStar(
-    val angle: Float,
-    val speed: Float,
-    val distanceOffset: Float,
-    val color: Color
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputScreen(
@@ -134,15 +127,13 @@ fun InputScreen(
         )
     }
 
-    // Stars background generation (3D radial starfield: angle, speed depth, start distance)
+    // Stars background generation (360-degree panorama: Offset position, scale factor, color)
     val stars = remember {
-        List(120) {
-            WarpStar(
-                angle = Random.nextFloat() * 2f * Math.PI.toFloat(),
-                speed = 0.3f + Random.nextFloat() * 0.9f,
-                distanceOffset = Random.nextFloat(),
-                color = starColors[Random.nextInt(starColors.size)]
-            )
+        List(80) {
+            val offset = Offset(Random.nextFloat(), Random.nextFloat())
+            val scale = 0.3f + Random.nextFloat() * 0.7f
+            val color = starColors[Random.nextInt(starColors.size)]
+            Triple(offset, scale, color)
         }
     }
 
@@ -222,58 +213,40 @@ fun InputScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .drawBehind {
-                    val progress = driftOffset
                     val alphaVal = pulseAlpha
-                    // Apply gyroscope/accelerometer offset to shift the starfield origin (VR-like parallax)
-                    val centerX = size.width / 2f - tiltX * 12.dp.toPx()
-                    // Calibrate Y with a typical 5.0 tilt baseline for a hand-held 45 degree angle
-                    val centerY = size.height / 2f + (tiltY - 5f) * 12.dp.toPx()
-                    // Maximum distance from center to screen corner from the current shifted origin
-                    val maxRadius = java.lang.Math.hypot(centerX.toDouble(), centerY.toDouble()).toFloat()
+                    val progress = driftOffset // Slow continuous background movement
+                    
+                    // 360-degree camera pan offsets based on tilt
+                    val panX = -tiltX * 0.15f
+                    // Calibrate Y with a typical 5.0 tilt baseline for a hand-held angle
+                    val panY = (tiltY - 5f) * 0.15f
 
-                    stars.forEach { star ->
-                        // Calculate radial progress distance from center (0f to 1f)
-                        val distance = ((star.distanceOffset + progress * star.speed) % 1.0f)
+                    stars.forEach { (offset, scale, color) ->
+                        // Calculate wrapping coordinates (VR Panorama effect)
+                        // The % 1.0f automatically wraps stars seamlessly around borders in 360 degrees
+                        val x = ((offset.x + panX + 1.0f) % 1.0f) * size.width
+                        val y = ((offset.y + panY + progress * 0.03f + 1.0f) % 1.0f) * size.height
                         
-                        // Tail length stretches based on speed (warp motion blur effect)
-                        val tailLength = 0.05f * star.speed
-                        val startDistance = (distance - tailLength).coerceAtLeast(0f)
-                        val endDistance = distance
+                        val radius = 2.dp.toPx() * scale
+                        val starAlpha = alphaVal * scale
 
-                        // Coordinates for start (tail) and end (core/head) of the streak
-                        val startX = centerX + kotlin.math.cos(star.angle.toDouble()).toFloat() * startDistance * maxRadius
-                        val startY = centerY + kotlin.math.sin(star.angle.toDouble()).toFloat() * startDistance * maxRadius
-                        
-                        val endX = centerX + kotlin.math.cos(star.angle.toDouble()).toFloat() * endDistance * maxRadius
-                        val endY = centerY + kotlin.math.sin(star.angle.toDouble()).toFloat() * endDistance * maxRadius
-
-                        // Thickness of warp streak scales up as it gets closer
-                        val strokeWidth = (1.dp.toPx() + 3.dp.toPx() * endDistance)
-                        val starAlpha = alphaVal * endDistance
-
-                        // 1. Outer Wide Glow Streak (high bloom, low opacity)
-                        drawLine(
-                            color = star.color.copy(alpha = (starAlpha * 0.15f).coerceIn(0f, 1f)),
-                            start = Offset(startX, startY),
-                            end = Offset(endX, endY),
-                            strokeWidth = strokeWidth * 2.8f,
-                            cap = androidx.compose.ui.graphics.StrokeCap.Round
+                        // 1. Large Outer Bloom Halo (low opacity)
+                        drawCircle(
+                            color = color.copy(alpha = (starAlpha * 0.15f).coerceIn(0f, 1f)),
+                            radius = radius * 3.5f,
+                            center = Offset(x, y)
                         )
-                        // 2. Inner Medium Glow Streak
-                        drawLine(
-                            color = star.color.copy(alpha = (starAlpha * 0.4f).coerceIn(0f, 1f)),
-                            start = Offset(startX, startY),
-                            end = Offset(endX, endY),
-                            strokeWidth = strokeWidth * 1.6f,
-                            cap = androidx.compose.ui.graphics.StrokeCap.Round
+                        // 2. Medium Inner Glow
+                        drawCircle(
+                            color = color.copy(alpha = (starAlpha * 0.4f).coerceIn(0f, 1f)),
+                            radius = radius * 1.8f,
+                            center = Offset(x, y)
                         )
-                        // 3. Core Intense Star Streak (solid core)
-                        drawLine(
+                        // 3. Core
+                        drawCircle(
                             color = Color.White.copy(alpha = starAlpha.coerceIn(0f, 1f)),
-                            start = Offset(startX, startY),
-                            end = Offset(endX, endY),
-                            strokeWidth = strokeWidth,
-                            cap = androidx.compose.ui.graphics.StrokeCap.Round
+                            radius = radius,
+                            center = Offset(x, y)
                         )
                     }
                 }
