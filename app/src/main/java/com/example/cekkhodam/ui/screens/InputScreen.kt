@@ -187,6 +187,19 @@ fun InputScreen(
                         val radius = 1.dp.toPx() + 3.dp.toPx() * distance
                         val starAlpha = alphaVal * distance
                         
+                        // 1. Large Outer Bloom Halo (low opacity, wide radius)
+                        drawCircle(
+                            color = Color.White.copy(alpha = (starAlpha * 0.12f).coerceIn(0f, 1f)),
+                            radius = radius * 3.5f,
+                            center = Offset(x, y)
+                        )
+                        // 2. Medium Inner Bloom Glow (medium opacity, mid radius)
+                        drawCircle(
+                            color = Color.White.copy(alpha = (starAlpha * 0.3f).coerceIn(0f, 1f)),
+                            radius = radius * 1.8f,
+                            center = Offset(x, y)
+                        )
+                        // 3. Main Star Core (solid brightness)
                         drawCircle(
                             color = Color.White.copy(alpha = starAlpha.coerceIn(0f, 1f)),
                             radius = radius,
