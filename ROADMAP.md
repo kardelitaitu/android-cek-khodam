@@ -58,19 +58,19 @@ gantt
 ### Phase 3: Core UI Screens
 * **Dates**: 5 – 6 July 2026
 * **Checklist**:
-  - [ ] **Input Screen**: Add Name TextField and date picker selector layout.
-  - [ ] **Aura Scanner Button**: Draw the custom fingerprint scanner container on Canvas with custom glowing ring animations and trigger haptic vibrations during holding.
-  - [ ] **Reveal Screen**: Program the spinning celestial compass rotation (via InfiniteTransition) and sequence loading text animations.
-  - [ ] **Result Screen layout**: Design the card, display dynamic element specific glows, and add progressive linear filling animations for attributes stats bars.
+  - [x] **Input Screen**: Add Name TextField and date picker selector layout.
+  - [x] **Aura Scanner Button**: Draw the custom fingerprint scanner container on Canvas with custom glowing ring animations and trigger haptic vibrations during holding.
+  - [x] **Reveal Screen**: Program the spinning celestial compass rotation (via InfiniteTransition) and sequence loading text animations.
+  - [x] **Result Screen layout**: Design the card, display dynamic element specific glows, and add progressive linear filling animations for attributes stats bars.
 
 ### Phase 4: Monetization & Social Features
 * **Dates**: 7 – 8 July 2026
 * **Checklist**:
-  - [ ] **Ad Banner**: Build the sticky ribbon component loading funny randomized mock advertisements.
-  - [ ] **Interstitial Overlay**: Design the mock full-screen game/app ad overlay with countdown timers and closing buttons.
-  - [ ] **Skip Credits**: Hook up `SharedPreferences` persistence for storing and modifying the 5 ad-skips credits count.
-  - [ ] **Social share intents**: Create package-targeted actions for WhatsApp, Instagram story clipboards, and Facebook.
-  - [ ] **TikTok sharing**: Code clipboard text formatter and launch intent targeted to `com.zhiliaoapp.musically`.
+  - [x] **Ad Banner**: Build the sticky ribbon component loading funny randomized mock advertisements.
+  - [x] **Interstitial Overlay**: Design the mock full-screen game/app ad overlay with countdown timers and closing buttons.
+  - [x] **Skip Credits**: Hook up `SharedPreferences` persistence for storing and modifying the 5 ad-skips credits count.
+  - [x] **Social share intents**: Create package-targeted actions for WhatsApp, Instagram story clipboards, and Facebook.
+  - [x] **TikTok sharing**: Code clipboard text formatter and launch intent targeted to `com.zhiliaoapp.musically`.
 
 ### Phase 5: Local AI Image Generation (ComfyUI)
 * **Dates**: 9 – 10 July 2026
