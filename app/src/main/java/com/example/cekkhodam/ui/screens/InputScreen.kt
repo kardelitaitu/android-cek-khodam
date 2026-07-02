@@ -81,10 +81,14 @@ fun InputScreen(
     var scanProgress by remember { mutableFloatStateOf(0f) }
     var isScanning by remember { mutableStateOf(false) }
 
-    // Stars background generation
+    // Stars background generation (3D radial starfield: angle, speed depth, start distance)
     val stars = remember {
-        List(40) {
-            Offset(Random.nextFloat(), Random.nextFloat()) to Random.nextFloat()
+        List(60) {
+            Triple(
+                Random.nextFloat() * 2f * Math.PI.toFloat(), // angle
+                0.4f + Random.nextFloat() * 0.6f,            // speed
+                Random.nextFloat()                           // distanceOffset
+            )
         }
     }
 
@@ -165,15 +169,27 @@ fun InputScreen(
                 .fillMaxSize()
                 .drawBehind {
                     val progress = driftOffset
-                    val alpha = pulseAlpha
-                    stars.forEach { (offset, scale) ->
-                        // Parallax horizontal drift (right-to-left) to simulate forward/sideways space flight
-                        val x = ((offset.x - progress * (0.3f + scale * 0.7f) + 1.0f) % 1.0f) * size.width
-                        // Subtle vertical drift to create a smooth diagonal glide path
-                        val y = ((offset.y - progress * 0.05f * (0.3f + scale * 0.7f) + 1.0f) % 1.0f) * size.height
+                    val alphaVal = pulseAlpha
+                    val centerX = size.width / 2f
+                    val centerY = size.height / 2f
+                    // Maximum distance from center to screen corner
+                    val maxRadius = java.lang.Math.hypot(centerX.toDouble(), centerY.toDouble()).toFloat()
+
+                    stars.forEach { (angle, speed, distanceOffset) ->
+                        // Calculate radial progress distance from center (0f to 1f)
+                        val distance = ((distanceOffset + progress * speed) % 1.0f)
+                        
+                        // Radial coordinates expansion outward
+                        val x = centerX + kotlin.math.cos(angle.toDouble()).toFloat() * distance * maxRadius
+                        val y = centerY + kotlin.math.sin(angle.toDouble()).toFloat() * distance * maxRadius
+                        
+                        // Star grows larger and brighter as it approaches
+                        val radius = 1.dp.toPx() + 3.dp.toPx() * distance
+                        val starAlpha = alphaVal * distance
+                        
                         drawCircle(
-                            color = Color.White.copy(alpha = alpha * scale),
-                            radius = 2.dp.toPx() * scale,
+                            color = Color.White.copy(alpha = starAlpha.coerceIn(0f, 1f)),
+                            radius = radius,
                             center = Offset(x, y)
                         )
                     }
