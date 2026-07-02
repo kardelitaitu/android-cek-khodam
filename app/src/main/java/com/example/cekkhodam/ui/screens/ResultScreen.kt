@@ -183,28 +183,27 @@ fun ResultScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
-                .verticalScroll(scrollState),
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Upper Title
             Text(
                 text = "✨ AURA REVEALED ✨",
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = CosmicGold,
-                letterSpacing = 3.sp,
+                letterSpacing = 2.sp,
                 textAlign = TextAlign.Center
             )
 
             Text(
                 text = "Calculated for $name",
                 color = Color.LightGray,
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
+                modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
             )
 
             // Holographic Cosmic Card Layout
@@ -223,14 +222,14 @@ fun ResultScreen(
 
             Card(
                 colors = CardDefaults.cardColors(containerColor = GlassSurface),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(2.dp, cardBrush, RoundedCornerShape(24.dp))
+                    .border(2.dp, cardBrush, RoundedCornerShape(20.dp))
                     .padding(1.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Dynamic Image Asset loader with Emoji fallback
@@ -244,7 +243,7 @@ fun ResultScreen(
                             painter = androidx.compose.ui.res.painterResource(id = imageResId),
                             contentDescription = khodam.name,
                             modifier = Modifier
-                                .size(72.dp)
+                                .size(64.dp)
                                 .clip(CircleShape)
                                 .border(1.dp, elementColor.copy(alpha = 0.5f), CircleShape)
                         )
@@ -256,22 +255,22 @@ fun ResultScreen(
                         }
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
+                                .size(64.dp)
                                 .clip(CircleShape)
                                 .background(elementColor.copy(alpha = 0.2f))
                                 .border(1.dp, elementColor.copy(alpha = 0.5f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = emoji, fontSize = 36.sp)
+                            Text(text = emoji, fontSize = 32.sp)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     // Companion Name
                     Text(
                         text = khodam.name,
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Black,
                         color = CosmicGold,
                         textAlign = TextAlign.Center
@@ -280,32 +279,32 @@ fun ResultScreen(
                     // Category Badge
                     Box(
                         modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .padding(vertical = 4.dp)
+                            .clip(RoundedCornerShape(6.dp))
                             .background(elementColor.copy(alpha = 0.3f))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = khodam.category.uppercase(),
                             color = Color.White,
-                            fontSize = 10.sp,
+                            fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     // Character Description
                     Text(
                         text = khodam.description,
                         color = Color.White,
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     // Progress Attribute Stats
                     AttributeRow("POWER", powerProgress.value, elementColor)
@@ -314,29 +313,34 @@ fun ResultScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Locked Prophecies Segment: Financial
-            ProphecyCard(
-                title = "💼 Financial & Career Prophecy",
-                content = khodam.financial,
-                isUnlocked = isFinancialUnlocked,
-                elementColor = elementColor,
-                onUnlockClick = { onUnlockRequest("FINANCIAL") }
-            )
+            // Locked Prophecies Segment Row (Side-by-Side)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    ProphecyCard(
+                        title = "💼 Financial",
+                        content = khodam.financial,
+                        isUnlocked = isFinancialUnlocked,
+                        elementColor = elementColor,
+                        onUnlockClick = { onUnlockRequest("FINANCIAL") }
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    ProphecyCard(
+                        title = "💖 Romance",
+                        content = khodam.romantic,
+                        isUnlocked = isRomanticUnlocked,
+                        elementColor = elementColor,
+                        onUnlockClick = { onUnlockRequest("ROMANTIC") }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Locked Prophecies Segment: Romance
-            ProphecyCard(
-                title = "💖 Romantic & Love Prophecy",
-                content = khodam.romantic,
-                isUnlocked = isRomanticUnlocked,
-                elementColor = elementColor,
-                onUnlockClick = { onUnlockRequest("ROMANTIC") }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
 
             // Social Sharing Buttons Row
             Text(
