@@ -1,6 +1,12 @@
 package com.example.cekkhodam.ui.screens
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -81,6 +87,36 @@ fun InputScreen(
     var scanProgress by remember { mutableFloatStateOf(0f) }
     var isScanning by remember { mutableStateOf(false) }
 
+    // Gyroscope/Accelerometer tilt states for VR-like 3D parallax effect
+    var tiltX by remember { mutableFloatStateOf(0f) }
+    var tiltY by remember { mutableFloatStateOf(0f) }
+
+    DisposableEffect(Unit) {
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event != null && event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+                    // event.values[0] is X-axis tilt (left/right)
+                    // event.values[1] is Y-axis tilt (up/down)
+                    // Low-pass filter to smooth the tilt values
+                    tiltX = tiltX * 0.9f + event.values[0] * 0.1f
+                    tiltY = tiltY * 0.9f + event.values[1] * 0.1f
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        
+        if (accelerometer != null) {
+            sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+        }
+        
+        onDispose {
+            sensorManager.unregisterListener(listener)
+        }
+    }
+
     // Stars background generation (3D radial starfield: angle, speed depth, start distance)
     val stars = remember {
         List(60) {
@@ -105,8 +141,8 @@ fun InputScreen(
             val twinkleAngle = (elapsed % 1200) / 1200f * 2.0 * Math.PI
             pulseAlpha = 0.3f + 0.5f * ((Math.sin(twinkleAngle).toFloat() + 1f) / 2f)
 
-            // Drift: cycle between 0f and 1f every 7 seconds
-            driftOffset = (elapsed % 7000) / 7000f
+            // Drift: Continuous infinite accumulation (no modulo reset, preventing snapping!)
+            driftOffset = elapsed / 7000f
             
             delay(16) // ~60fps target rate
         }
@@ -170,9 +206,11 @@ fun InputScreen(
                 .drawBehind {
                     val progress = driftOffset
                     val alphaVal = pulseAlpha
-                    val centerX = size.width / 2f
-                    val centerY = size.height / 2f
-                    // Maximum distance from center to screen corner
+                    // Apply gyroscope/accelerometer offset to shift the starfield origin (VR-like parallax)
+                    val centerX = size.width / 2f - tiltX * 12.dp.toPx()
+                    // Calibrate Y with a typical 5.0 tilt baseline for a hand-held 45 degree angle
+                    val centerY = size.height / 2f + (tiltY - 5f) * 12.dp.toPx()
+                    // Maximum distance from center to screen corner from the current shifted origin
                     val maxRadius = java.lang.Math.hypot(centerX.toDouble(), centerY.toDouble()).toFloat()
 
                     stars.forEach { (angle, speed, distanceOffset) ->
