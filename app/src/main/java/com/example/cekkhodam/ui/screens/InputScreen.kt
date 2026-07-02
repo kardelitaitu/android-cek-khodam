@@ -93,7 +93,7 @@ fun InputScreen(
         initialValue = 0.2f,
         targetValue = 0.8f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
+            animation = tween(1000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "StarAlpha"
@@ -103,7 +103,7 @@ fun InputScreen(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(25000, easing = LinearEasing),
+            animation = tween(6000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "StarDrift"
