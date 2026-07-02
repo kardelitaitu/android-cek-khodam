@@ -274,22 +274,7 @@ fun ResultScreen(
                         textAlign = TextAlign.Center
                     )
 
-                    // Category Badge
-                    Box(
-                        modifier = Modifier
-                            .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(elementColor.copy(alpha = 0.3f))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = khodam.category.uppercase(),
-                            color = Color.White,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-                    }
+
 
                     Spacer(modifier = Modifier.height(6.dp))
 
