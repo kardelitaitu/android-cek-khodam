@@ -470,7 +470,7 @@ fun ProphecyCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Tap to Reveal with Ad",
+                            text = "Tap to Reveal",
                             color = Color.White,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
