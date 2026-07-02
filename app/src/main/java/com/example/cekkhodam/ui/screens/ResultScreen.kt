@@ -707,7 +707,6 @@ fun ProphecyCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(12.dp) // Smaller padding to maximize layout efficiency
-                    .then(if (!isUnlocked) Modifier.blur(8.dp) else Modifier)
             ) {
                 Text(
                     text = title,
@@ -716,11 +715,12 @@ fun ProphecyCard(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                // Scrollable text area inside fixed-height box to handle long texts gracefully
+                // Scrollable text area inside fixed-height box, blurred if locked
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
+                        .then(if (!isUnlocked) Modifier.blur(8.dp) else Modifier)
                         .verticalScroll(rememberScrollState())
                 ) {
                     Text(
