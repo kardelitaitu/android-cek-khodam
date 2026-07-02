@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -159,19 +160,24 @@ fun InputScreen(
                 )
             )
     ) {
-        // Floating Stars with dynamic parallax drift
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            stars.forEach { (offset, scale) ->
-                val x = offset.x * size.width
-                // Larger stars drift down slightly faster for parallax depth
-                val y = ((offset.y + driftOffset * (0.3f + scale * 0.7f)) % 1.0f) * size.height
-                drawCircle(
-                    color = Color.White.copy(alpha = pulseAlpha * scale),
-                    radius = 2.dp.toPx() * scale,
-                    center = Offset(x, y)
-                )
-            }
-        }
+        // Floating Stars with dynamic parallax drift using drawBehind for high-performance invalidation
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .drawBehind {
+                    val progress = driftOffset
+                    val alpha = pulseAlpha
+                    stars.forEach { (offset, scale) ->
+                        val x = offset.x * size.width
+                        val y = ((offset.y + progress * (0.3f + scale * 0.7f)) % 1.0f) * size.height
+                        drawCircle(
+                            color = Color.White.copy(alpha = alpha * scale),
+                            radius = 2.dp.toPx() * scale,
+                            center = Offset(x, y)
+                        )
+                    }
+                }
+        )
 
         Column(
             modifier = Modifier
