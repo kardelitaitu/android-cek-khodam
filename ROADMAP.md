@@ -49,11 +49,11 @@ gantt
 ### Phase 2: Engine & Hashing Logic
 * **Dates**: 3 – 4 July 2026
 * **Checklist**:
-  - [ ] Implement data models (`Element`, `Beast`, `Joke`, `Flower`, composite `Khodam`) in `model/Khodam.kt`.
-  - [ ] Implement CSV asset parser functions using Java `BufferedReader`.
-  - [ ] Implement SHA-256 seed normalization and positive `BigInteger` conversion.
-  - [ ] Code the 450-modulo range partition algorithm (`0-299` Element-Beast, `300-349` Jokes, `350-449` Flowers).
-  - [ ] Build the `MainViewModel` featuring the single `AppState` state machine.
+  - [x] Implement data models (`Element`, `Beast`, `Joke`, `Flower`, composite `Khodam`) in `model/Khodam.kt`.
+  - [x] Implement CSV asset parser functions using Java `BufferedReader`.
+  - [x] Implement SHA-256 seed normalization and positive `BigInteger` conversion.
+  - [x] Code the 450-modulo range partition algorithm (`0-299` Element-Beast, `300-349` Jokes, `350-449` Flowers).
+  - [x] Build the `MainViewModel` featuring the single `AppState` state machine.
 
 ### Phase 3: Core UI Screens
 * **Dates**: 5 – 6 July 2026
