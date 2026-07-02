@@ -382,7 +382,7 @@ fun ResultScreen(
                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(160.dp)
+                                .height(220.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .border(1.dp, elementColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                         )
@@ -395,7 +395,7 @@ fun ResultScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(160.dp)
+                                .height(220.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(elementColor.copy(alpha = 0.15f))
                                 .border(1.dp, elementColor.copy(alpha = 0.4f), RoundedCornerShape(12.dp)),
