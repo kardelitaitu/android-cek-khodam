@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -91,6 +92,9 @@ fun ResultScreen(
         khodam.glowColorHex.replace("0x", "#")
     )
     val elementColor = Color(rawColor)
+
+    // Dialog state for full description view popup
+    var showDescriptionDialog by remember { mutableStateOf(false) }
 
     // Animated Attribute Bars
     val powerProgress = remember { Animatable(0f) }
@@ -414,14 +418,23 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Localized Description
-                    Text(
-                        text = translateDescription(khodam.description),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    // Localized Description (Clickable to open full dialog, limited height for card space)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 48.dp)
+                            .verticalScroll(rememberScrollState())
+                            .clickable { showDescriptionDialog = true }
+                    ) {
+                        Text(
+                            text = translateDescription(khodam.description),
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -516,6 +529,93 @@ fun ResultScreen(
             }
 
             Spacer(modifier = Modifier.height(120.dp))
+        }
+
+        // Full description popup dialog
+        if (showDescriptionDialog) {
+            androidx.compose.ui.window.Dialog(
+                onDismissRequest = { showDescriptionDialog = false }
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = GlassSurface),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                        .border(2.dp, elementColor.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(20.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = localizedName,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black,
+                            color = CosmicGold,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .heightIn(max = 280.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                text = translateDescription(khodam.description),
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Cek Khodam Description", translateDescription(khodam.description))
+                                    clipboard.setPrimaryClip(clip)
+                                    val toastMsg = if (language == "EN") "Description copied!" else "Deskripsi disalin!"
+                                    android.widget.Toast.makeText(context, toastMsg, android.widget.Toast.LENGTH_SHORT).show()
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = GlassSurface),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                                    .border(1.dp, GlassBorder, RoundedCornerShape(22.dp))
+                            ) {
+                                Text(
+                                    text = if (language == "EN") "Copy" else "Salin",
+                                    color = CosmicGold,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Button(
+                                onClick = { showDescriptionDialog = false },
+                                colors = ButtonDefaults.buttonColors(containerColor = GlassSurface),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                                    .border(1.dp, GlassBorder, RoundedCornerShape(22.dp))
+                            ) {
+                                Text(
+                                    text = if (language == "EN") "Close" else "Tutup",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
