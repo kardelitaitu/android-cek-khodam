@@ -81,10 +81,10 @@ gantt
   - [ ] Resize all selected images to square 512x512, export as WebP assets, and add to drawables repository.
 
 ### Phase 6: Polish, Shaders, & Launch
-* **Dates**: 11 – 12 July 2026
+* **Dates**: 11 July 2026
 * **Checklist**:
-  - [ ] Add the Easter Egg static overrides checking logic for names like *Windah Basudara*.
-  - [ ] Write moving iridescent custom shader animations for premium unlocked cards.
-  - [ ] Test the entire flow (input -> scanner -> ad -> reveal -> result -> locked -> ads -> unlock -> share).
-  - [ ] Build release APK and verify size optimizations.
-
+  - [x] Test ad transition sequences, skip credits, and share hooks.
+  - [x] Inspect Compose previews and review layout bounds.
+  - [x] Run `./gradlew assembleDebug` to verify final debug package packaging.
+  - [x] Test the entire flow (input -> scanner -> ad -> reveal -> result -> locked -> ads -> unlock -> share).
+  - [x] Build release APK and verify size optimizations.
