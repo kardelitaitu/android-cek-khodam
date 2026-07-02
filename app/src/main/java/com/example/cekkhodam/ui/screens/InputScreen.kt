@@ -69,6 +69,13 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.random.Random
 
+data class WarpStar(
+    val angle: Float,
+    val speed: Float,
+    val distanceOffset: Float,
+    val color: Color
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputScreen(
@@ -127,13 +134,15 @@ fun InputScreen(
         )
     }
 
-    // Stars background generation (360-degree panorama: Offset position, scale factor, color)
+    // Stars background generation (3D radial starfield coordinates: angle, speed depth, start distance, color)
     val stars = remember {
-        List(80) {
-            val offset = Offset(Random.nextFloat(), Random.nextFloat())
-            val scale = 0.3f + Random.nextFloat() * 0.7f
-            val color = starColors[Random.nextInt(starColors.size)]
-            Triple(offset, scale, color)
+        List(85) {
+            WarpStar(
+                angle = Random.nextFloat() * 2f * Math.PI.toFloat(),
+                speed = 0.15f + Random.nextFloat() * 0.35f, // Slow approach velocity
+                distanceOffset = Random.nextFloat(),
+                color = starColors[Random.nextInt(starColors.size)]
+            )
         }
     }
 
@@ -150,8 +159,8 @@ fun InputScreen(
             val twinkleAngle = (elapsed % 1200) / 1200f * 2.0 * Math.PI
             pulseAlpha = 0.3f + 0.5f * ((Math.sin(twinkleAngle).toFloat() + 1f) / 2f)
 
-            // Drift: Continuous infinite accumulation (no modulo reset, preventing snapping!)
-            driftOffset = elapsed / 7000f
+            // Drift: Continuous infinite accumulation (slowed down for very gentle approach movement)
+            driftOffset = elapsed / 22000f
             
             delay(16) // ~60fps target rate
         }
@@ -214,31 +223,37 @@ fun InputScreen(
                 .fillMaxSize()
                 .drawBehind {
                     val alphaVal = pulseAlpha
-                    val progress = driftOffset // Slow continuous background movement
+                    val progress = driftOffset
                     
-                    // 360-degree camera pan offsets based on tilt
-                    val panX = -tiltX * 0.15f
+                    // VR-like panning shifts the center of travel direction dynamically based on device tilt
+                    val centerX = size.width / 2f - tiltX * 16.dp.toPx()
                     // Calibrate Y with a typical 5.0 tilt baseline for a hand-held angle
-                    val panY = (tiltY - 5f) * 0.15f
+                    val centerY = size.height / 2f + (tiltY - 5f) * 16.dp.toPx()
+                    
+                    // Maximum distance from center to screen corner from the current shifted origin
+                    val maxRadius = java.lang.Math.hypot(centerX.toDouble(), centerY.toDouble()).toFloat()
 
-                    stars.forEach { (offset, scale, color) ->
-                        // Calculate wrapping coordinates (VR Panorama effect)
-                        // The % 1.0f automatically wraps stars seamlessly around borders in 360 degrees
-                        val x = ((offset.x + panX + 1.0f) % 1.0f) * size.width
-                        val y = ((offset.y + panY + progress * 0.03f + 1.0f) % 1.0f) * size.height
+                    stars.forEach { star ->
+                        // Calculate radial progress distance from center (0f to 1f)
+                        val distance = ((star.distanceOffset + progress * star.speed) % 1.0f)
                         
-                        val radius = 2.dp.toPx() * scale
-                        val starAlpha = alphaVal * scale
+                        // Coordinates emerging and expanding outward from shifted center
+                        val x = centerX + kotlin.math.cos(star.angle.toDouble()).toFloat() * distance * maxRadius
+                        val y = centerY + kotlin.math.sin(star.angle.toDouble()).toFloat() * distance * maxRadius
+                        
+                        // Star size scales up slowly as it approaches
+                        val radius = (1.dp.toPx() + 3.dp.toPx() * distance) * 0.75f
+                        val starAlpha = alphaVal * distance
 
                         // 1. Large Outer Bloom Halo (low opacity)
                         drawCircle(
-                            color = color.copy(alpha = (starAlpha * 0.15f).coerceIn(0f, 1f)),
+                            color = star.color.copy(alpha = (starAlpha * 0.15f).coerceIn(0f, 1f)),
                             radius = radius * 3.5f,
                             center = Offset(x, y)
                         )
                         // 2. Medium Inner Glow
                         drawCircle(
-                            color = color.copy(alpha = (starAlpha * 0.4f).coerceIn(0f, 1f)),
+                            color = star.color.copy(alpha = (starAlpha * 0.4f).coerceIn(0f, 1f)),
                             radius = radius * 1.8f,
                             center = Offset(x, y)
                         )
