@@ -1,6 +1,11 @@
 package com.example.cekkhodam.ui.screens
 
-import android.app.DatePickerDialog
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -21,6 +26,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -204,24 +210,15 @@ fun InputScreen(
         }
     }
 
-    // Calendar initialization
-    val calendar = Calendar.getInstance()
-    val datePickerDialog = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val monthStr = if (month + 1 < 10) "0${month + 1}" else "${month + 1}"
-                val dayStr = if (dayOfMonth < 10) "0$dayOfMonth" else "$dayOfMonth"
-                dob = "$year-$monthStr-$dayStr"
-                showErrorMessage = false
-            },
-            calendar.get(Calendar.YEAR) - 20,
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        ).apply {
-            datePicker.maxDate = System.currentTimeMillis()
-        }
-    }
+    // Custom Date Picker states (Wheel scrollable native Compose inputs)
+    var showCustomDatePicker by remember { mutableStateOf(false) }
+    var selectedDay by remember { mutableStateOf("15") }
+    var selectedMonth by remember { mutableStateOf("06") }
+    var selectedYear by remember { mutableStateOf("2000") }
+
+    val daysList = remember { (1..31).map { if (it < 10) "0$it" else "$it" } }
+    val monthsList = remember { (1..12).map { if (it < 10) "0$it" else "$it" } }
+    val yearsList = remember { (1940..2026).map { "$it" } }
 
     // Coroutine managing haptic pulses and progress during scanning
     LaunchedEffect(isScanning) {
@@ -358,7 +355,7 @@ fun InputScreen(
                     .clip(RoundedCornerShape(12.dp))
                     .background(GlassSurface)
                     .border(1.dp, GlassBorder, RoundedCornerShape(12.dp))
-                    .clickable { datePickerDialog.show() }
+                    .clickable { showCustomDatePicker = true }
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
@@ -450,6 +447,135 @@ fun InputScreen(
                         fontSize = 36.sp
                     )
                 }
+            }
+        }
+
+        // Custom native Wheel Date Picker Dialog overlay
+        if (showCustomDatePicker) {
+            Dialog(
+                onDismissRequest = { showCustomDatePicker = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                androidx.compose.material3.Card(
+                    colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = GlassSurface),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .border(2.dp, CosmicGold.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "📅 Select Birthday",
+                            color = CosmicGold,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            WheelSelector(
+                                items = daysList,
+                                selectedItem = selectedDay,
+                                onItemSelected = { selectedDay = it },
+                                modifier = Modifier.weight(1f)
+                            )
+                            WheelSelector(
+                                items = monthsList,
+                                selectedItem = selectedMonth,
+                                onItemSelected = { selectedMonth = it },
+                                modifier = Modifier.weight(1f)
+                            )
+                            WheelSelector(
+                                items = yearsList,
+                                selectedItem = selectedYear,
+                                onItemSelected = { selectedYear = it },
+                                modifier = Modifier.weight(1.2f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                dob = "$selectedYear-$selectedMonth-$selectedDay"
+                                showErrorMessage = false
+                                showCustomDatePicker = false
+                            },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = GlassSurface),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(46.dp)
+                                .border(1.dp, GlassBorder, RoundedCornerShape(23.dp))
+                        ) {
+                            Text(
+                                text = "Confirm",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WheelSelector(
+    items: List<String>,
+    selectedItem: String,
+    onItemSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val listState = rememberLazyListState()
+    
+    LaunchedEffect(selectedItem) {
+        val index = items.indexOf(selectedItem)
+        if (index >= 0) {
+            listState.animateScrollToItem(index)
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .height(150.dp)
+            .background(Color.Black.copy(alpha = 0.3f))
+            .border(1.dp, GlassBorder, RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        // Center selection bar highlighting borders
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(36.dp)
+                .border(1.dp, CosmicGold.copy(alpha = 0.25f))
+        )
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(vertical = 56.dp)
+        ) {
+            items(items) { item ->
+                val isSelected = item == selectedItem
+                Text(
+                    text = item,
+                    color = if (isSelected) CosmicGold else Color.Gray,
+                    fontSize = if (isSelected) 18.sp else 14.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onItemSelected(item) }
+                        .padding(vertical = 6.dp),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
