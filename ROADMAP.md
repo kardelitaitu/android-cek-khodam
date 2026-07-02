@@ -40,10 +40,10 @@ gantt
 ### Phase 1: Project Setup & Scaffolding
 * **Date**: 2 July 2026
 * **Checklist**:
-  - [ ] Run `android create empty-activity` to scaffold the Kotlin/Compose project structure.
-  - [ ] Define cosmic color tokens (Deep Space backgrounds, neon glows) in `ui/theme/Color.kt`.
-  - [ ] Setup mystical Typography configurations (Google Fonts integration if desired) in `ui/theme/Type.kt`.
-  - [ ] Create `elements.csv`, `beasts.csv`, `jokes.csv`, and `flowers.csv` database templates inside `app/src/main/assets/`.
+  - [x] Run `android create empty-activity` to scaffold the Kotlin/Compose project structure.
+  - [x] Define cosmic color tokens (Deep Space backgrounds, neon glows) in `ui/theme/Color.kt`.
+  - [x] Setup mystical Typography configurations (Google Fonts integration if desired) in `ui/theme/Type.kt`.
+  - [x] Create `elements.csv`, `beasts.csv`, `jokes.csv`, and `flowers.csv` database templates inside `app/src/main/assets/`.
 
 
 ### Phase 2: Engine & Hashing Logic
