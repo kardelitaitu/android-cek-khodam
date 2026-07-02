@@ -233,7 +233,8 @@ fun ResultScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Dynamic Image Asset loader with Emoji fallback
-                    val sanitizedName = khodam.name.lowercase().replace(" ", "").replace("[^a-z0-9]".toRegex(), "")
+                    val cleanName = khodam.name.replace(Regex("\\([^)]*\\)"), "").trim()
+                    val sanitizedName = cleanName.lowercase().replace(" ", "").replace("[^a-z0-9]".toRegex(), "")
                     val imageResId = remember(sanitizedName) {
                         context.resources.getIdentifier("khodam_$sanitizedName", "drawable", context.packageName)
                     }
