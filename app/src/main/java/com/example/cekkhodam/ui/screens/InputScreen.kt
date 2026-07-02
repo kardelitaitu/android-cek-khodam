@@ -89,7 +89,7 @@ fun InputScreen(
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "StarPulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
+    val pulseAlphaState = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.8f,
         animationSpec = infiniteRepeatable(
@@ -99,7 +99,7 @@ fun InputScreen(
         label = "StarAlpha"
     )
 
-    val driftOffset by infiniteTransition.animateFloat(
+    val driftOffsetState = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -165,8 +165,8 @@ fun InputScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .drawBehind {
-                    val progress = driftOffset
-                    val alpha = pulseAlpha
+                    val progress = driftOffsetState.value
+                    val alpha = pulseAlphaState.value
                     stars.forEach { (offset, scale) ->
                         val x = offset.x * size.width
                         val y = ((offset.y + progress * (0.3f + scale * 0.7f)) % 1.0f) * size.height
