@@ -686,28 +686,37 @@ fun ProphecyCard(
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .height(115.dp) // Fixed smaller height
             .border(1.dp, GlassBorder, RoundedCornerShape(16.dp))
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
+                    .fillMaxSize()
+                    .padding(12.dp) // Smaller padding to maximize layout efficiency
                     .then(if (!isUnlocked) Modifier.blur(8.dp) else Modifier)
             ) {
                 Text(
                     text = title,
                     color = CosmicGold,
-                    fontSize = 14.sp,
+                    fontSize = 12.sp, // Optimized font size
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = content,
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                // Scrollable text area inside fixed-height box to handle long texts gracefully
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = content,
+                        color = Color.White,
+                        fontSize = 11.sp, // Sized down to fit smaller box dimensions
+                        lineHeight = 15.sp
+                    )
+                }
             }
 
             if (!isUnlocked) {
@@ -723,13 +732,13 @@ fun ProphecyCard(
                             imageVector = Icons.Default.Lock,
                             contentDescription = "Locked",
                             tint = CosmicGold,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp) // Scaled down lock icon
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = tapToRevealLabel,
                             color = Color.White,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
