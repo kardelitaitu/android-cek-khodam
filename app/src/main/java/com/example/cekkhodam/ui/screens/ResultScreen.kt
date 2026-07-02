@@ -55,7 +55,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -122,7 +125,7 @@ fun ResultScreen(
 
     // Iridescent moving sheen animation for fully unlocked holographic cards
     val infiniteTransition = rememberInfiniteTransition(label = "HoloSheen")
-    val sheenOffset by infiniteTransition.animateFloat(
+    val sheenOffsetState = infiniteTransition.animateFloat(
         initialValue = -500f,
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
@@ -343,25 +346,35 @@ fun ResultScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Shifting holographic cosmic rainbow outline ring
-            val cardBrush = Brush.linearGradient(
-                colors = listOf(
-                    elementColor,
-                    CosmicGold,
-                    PurpleSpark,
-                    Color(0xFF00E5FF), // Cyber Cyan/Rainbow mint
-                    elementColor
-                ),
-                start = Offset(sheenOffset, sheenOffset),
-                end = Offset(sheenOffset + 500f, sheenOffset + 500f)
-            )
-
             Card(
                 colors = CardDefaults.cardColors(containerColor = GlassSurface),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(2.dp, cardBrush, RoundedCornerShape(20.dp))
+                    .drawWithContent {
+                        // 1. Draw the card's original content and children
+                        drawContent()
+                        
+                        // 2. Draw the animated glowing rainbow border ring on top of the content
+                        val progress = sheenOffsetState.value
+                        val animatedBrush = Brush.linearGradient(
+                            colors = listOf(
+                                elementColor,
+                                CosmicGold,
+                                PurpleSpark,
+                                Color(0xFF00E5FF), // Cyber Cyan/Rainbow mint
+                                elementColor
+                            ),
+                            start = Offset(progress, progress),
+                            end = Offset(progress + 500f, progress + 500f)
+                        )
+                        
+                        drawRoundRect(
+                            brush = animatedBrush,
+                            style = Stroke(width = 2.dp.toPx()),
+                            cornerRadius = CornerRadius(20.dp.toPx(), 20.dp.toPx())
+                        )
+                    }
                     .padding(1.dp)
             ) {
                 Column(
