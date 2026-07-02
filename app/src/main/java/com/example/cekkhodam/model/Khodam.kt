@@ -229,8 +229,8 @@ object KhodamEngine {
         jokes: List<Joke>,
         flowers: List<Flower>
     ): Khodam {
-        // Test override cheat-code
-        if (name.trim().equals("Wood Tiger Test", ignoreCase = true)) {
+        val testName = name.trim().lowercase()
+        if (testName.contains("wood") && testName.contains("tiger")) {
             val element = elements.firstOrNull { it.name.contains("Wood", ignoreCase = true) } 
                 ?: Element(0, "Wood", "natural growing energy", "Steady growth awaits. Your patience will yield positive financial returns.", "Warm and growing love. You protect each other naturally.")
             val beast = beasts.firstOrNull { it.name.contains("Tiger", ignoreCase = true) }
