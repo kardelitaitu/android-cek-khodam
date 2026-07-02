@@ -62,7 +62,7 @@ fun InterstitialAd(
     modifier: Modifier = Modifier
 ) {
     val skipCredits by adManager.skipCredits.collectAsState()
-    var secondsRemaining by remember { mutableIntStateOf(3) }
+    var secondsRemaining by remember { mutableIntStateOf(1) }
     var canClose by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
