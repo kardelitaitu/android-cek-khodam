@@ -88,26 +88,25 @@ fun InputScreen(
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "StarPulse")
-    val pulseAlphaState = infiniteTransition.animateFloat(
-        initialValue = 0.2f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "StarAlpha"
-    )
+    // Animated stardust variables driven by a fail-safe coroutine clock
+    var pulseAlpha by remember { mutableFloatStateOf(0.5f) }
+    var driftOffset by remember { mutableFloatStateOf(0f) }
 
-    val driftOffsetState = infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(6000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "StarDrift"
-    )
+    LaunchedEffect(Unit) {
+        val startTime = System.currentTimeMillis()
+        while (true) {
+            val elapsed = System.currentTimeMillis() - startTime
+            
+            // Twinkle: sinusoidal cycle between 0.3f and 0.8f every 1.2 seconds
+            val twinkleAngle = (elapsed % 1200) / 1200f * 2.0 * Math.PI
+            pulseAlpha = 0.3f + 0.5f * ((Math.sin(twinkleAngle).toFloat() + 1f) / 2f)
+
+            // Drift: cycle between 0f and 1f every 7 seconds
+            driftOffset = (elapsed % 7000) / 7000f
+            
+            delay(16) // ~60fps target rate
+        }
+    }
 
     // Calendar initialization
     val calendar = Calendar.getInstance()
@@ -165,8 +164,8 @@ fun InputScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .drawBehind {
-                    val progress = driftOffsetState.value
-                    val alpha = pulseAlphaState.value
+                    val progress = driftOffset
+                    val alpha = pulseAlpha
                     stars.forEach { (offset, scale) ->
                         val x = offset.x * size.width
                         val y = ((offset.y + progress * (0.3f + scale * 0.7f)) % 1.0f) * size.height
