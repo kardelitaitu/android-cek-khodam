@@ -98,6 +98,16 @@ fun InputScreen(
         label = "StarAlpha"
     )
 
+    val driftOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(25000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "StarDrift"
+    )
+
     // Calendar initialization
     val calendar = Calendar.getInstance()
     val datePickerDialog = remember {
@@ -149,13 +159,16 @@ fun InputScreen(
                 )
             )
     ) {
-        // Floating Stars
+        // Floating Stars with dynamic parallax drift
         Canvas(modifier = Modifier.fillMaxSize()) {
             stars.forEach { (offset, scale) ->
+                val x = offset.x * size.width
+                // Larger stars drift down slightly faster for parallax depth
+                val y = ((offset.y + driftOffset * (0.3f + scale * 0.7f)) % 1.0f) * size.height
                 drawCircle(
                     color = Color.White.copy(alpha = pulseAlpha * scale),
-                    radius = 3.dp.toPx() * scale,
-                    center = Offset(offset.x * size.width, offset.y * size.height)
+                    radius = 2.dp.toPx() * scale,
+                    center = Offset(x, y)
                 )
             }
         }

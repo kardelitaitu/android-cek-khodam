@@ -14,10 +14,10 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,17 +45,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -78,13 +77,14 @@ fun ResultScreen(
     khodam: Khodam,
     isFinancialUnlocked: Boolean,
     isRomanticUnlocked: Boolean,
+    language: String,
+    onLanguageToggle: () -> Unit,
     onUnlockRequest: (String) -> Unit,
     onReset: () -> Unit,
     onShareSuccess: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
 
     // Base color parsing
     val rawColor = android.graphics.Color.parseColor(
@@ -128,14 +128,119 @@ fun ResultScreen(
         label = "SheenOffset"
     )
 
-    // Dynamic sharing text builder
-    val shareText = remember(isFinancialUnlocked, isRomanticUnlocked) {
-        val base = "🔮 My Khodam is the **${khodam.name}**! ✨\n" +
-                "Power: ${khodam.power}% | Mysticism: ${khodam.mysticism}%\n" +
-                "Description: ${khodam.description}\n"
-        val fin = if (isFinancialUnlocked) "Financial Prophecy: ${khodam.financial}\n" else ""
-        val rom = if (isRomanticUnlocked) "Romantic Prophecy: ${khodam.romantic}\n" else ""
-        "$base$fin$rom\nCheck your Khodam now at Play Store! 🔮"
+    // UI Translation Strings
+    val localizedTitle = if (language == "EN") "✨ AURA REVEALED ✨" else "✨ AURA TERUNGKAP ✨"
+    val powerLabel = if (language == "EN") "POWER" else "KEKUATAN"
+    val mysticismLabel = if (language == "EN") "MYSTICISM" else "KEMISTISAN"
+    val agilityLabel = if (language == "EN") "AGILITY" else "KELINCAHAN"
+    
+    val financialCardTitle = if (language == "EN") "💼 Financial" else "💼 Finansial"
+    val romanticCardTitle = if (language == "EN") "💖 Romance" else "💖 Percintaan"
+    val tapToRevealLabel = if (language == "EN") "Tap to Reveal" else "Ketuk untuk Membuka"
+    val shareRewardLabel = if (language == "EN") "Share result to get +5 Skip Ad credits (Capped at 5)" else "Bagikan hasil untuk dapat +5 kredit Lewati Iklan (Maks 5)"
+    val checkAnotherNameLabel = if (language == "EN") "Check Another Name" else "Cek Nama Lain"
+
+    // Parse names dynamically: Wood (Kayu) -> EN: Wood, ID: Kayu.
+    // Compound element-beast names like "Wood (Kayu) Tiger (Macan Putih)" are flipped to Indonesian grammar order: "Macan Putih Kayu".
+    val localizedName = remember(khodam.name, language) {
+        val enName = khodam.name.replace(Regex("\\([^)]*\\)"), "").replace("  ", " ").trim()
+        if (language == "EN") {
+            enName
+        } else {
+            val matches = Regex("\\(([^)]*)\\)").findAll(khodam.name).map { it.groupValues[1] }.toList()
+            if (matches.size >= 2) {
+                "${matches[1]} ${matches[0]}"
+            } else if (matches.isNotEmpty()) {
+                matches[0]
+            } else {
+                enName
+            }
+        }
+    }
+
+    fun translateProphecy(text: String): String {
+        if (language == "EN") return text
+        return when {
+            text.contains("Steady growth awaits") -> "Pertumbuhan stabil menanti. Kesabaran Anda akan membuahkan hasil finansial."
+            text.contains("bloom slowly but form") -> "Hubungan Anda akan berkembang perlahan namun berakar kuat."
+            text.contains("Take bold risks now") -> "Ambil risiko berani sekarang! Energi dinamis akan melipatgandakan kekayaan."
+            text.contains("Watch out for sudden") -> "Gairah yang membara. Waspadai argumen emosional, tetap tenang."
+            text.contains("Income will flow smoothly") -> "Pendapatan akan mengalir lancar seperti air. Beradaptasi untuk meraih peluang."
+            text.contains("flows with empathy") -> "Anda mengalir dengan empati. Sangat cocok dengan jiwa yang tenang."
+            text.contains("Structure your budget") -> "Rapikan anggaran Anda. Tekad yang kuat akan membawa keuangan yang stabil."
+            text.contains("protective and solid") -> "Anda pelindung yang kokoh. Hubungan terjamin, tetapi jangan terlalu kaku."
+            text.contains("grounded approach brings") -> "Pendekatan membumi membawa kestabilan. Amankan tabungan keuangan Anda."
+            text.contains("reliable and supportive") -> "Anda dapat diandalkan. Fondasi yang kokoh untuk cinta jangka panjang."
+            text.contains("Unexpected windfalls") -> "Rezeki nomplok tak terduga. Bintang-bintang mendukung karir Anda."
+            text.contains("stellar romance is written") -> "Koneksi bintang kosmik yang romantis telah tertulis di langit."
+            text.contains("Opportunities come and go") -> "Peluang datang dan pergi dengan cepat. Tangkap angin rezeki Anda."
+            text.contains("lighthearted and playful") -> "Cinta yang santai dan penuh canda. Jaga obrolan tetap segar."
+            text.contains("Sudden financial breakthroughs") -> "Terobosan finansial mendadak. Ikuti badai menuju kemakmuran."
+            text.contains("Electric chemistry") -> "Chemistry yang menyengat! Percikan cinta membara, jaga agar tidak korsleting."
+            text.contains("financial paths are clear") -> "Jalur keuangan Anda terang benderang. Kejujuran membawa berkah."
+            text.contains("pure and transparent") -> "Cinta yang murni dan transparan. Komunikasi terbuka memperkuat ikatan."
+            text.contains("Opportunities lie hidden") -> "Peluang tersembunyi di kegelapan. Berinvestasi secara diam-diam."
+            text.contains("Mysterious and alluring") -> "Misterius dan memikat. Jaga sedikit rahasia agar cinta tetap menarik."
+            text.contains("Crispy cash flow") -> "Aliran uang renyah garing. Bisnis lucu membawa uang tak terduga."
+            text.contains("Sweet and crispy") -> "Manis dan garing renyah. Anda lucu, menyenangkan, mudah dicintai."
+            text.contains("Simple saving strategies") -> "Strategi menabung sederhana bekerja dengan baik."
+            text.contains("Simple lifestyle saves") -> "Gaya hidup sederhana menghemat banyak uang."
+            text.contains("Cheerful dates") -> "Kencan yang menyenangkan dan santai."
+            text.contains("Warm and optimistic") -> "Hangat dan optimis. Membawa kebahagiaan dalam asmara."
+            text.contains("A lucky catch") -> "Tangkapan beruntung. Anda membawa keberuntungan untuk pasangan."
+            else -> {
+                text.replace("High", "Tinggi")
+                    .replace("Low", "Rendah")
+                    .replace("Good", "Bagus")
+                    .replace("Love", "Cinta")
+                    .replace("Wealth", "Kekayaan")
+                    .replace("returns", "hasil")
+                    .replace("investments", "investasi")
+                    .replace("investment", "investasi")
+            }
+        }
+    }
+
+    fun translateDescription(desc: String): String {
+        if (language == "EN") return desc
+        return desc
+            .replace("which", "yang")
+            .replace("influenced by", "dipengaruhi oleh")
+            .replace("radiates a calm and growing energy", "memancarkan energi tenang dan bertumbuh")
+            .replace("burns with high-octane passion", "membara dengan gairah yang kuat")
+            .replace("flows smoothly and adapts", "mengalir lancar dan beradaptasi")
+            .replace("is rigid and highly structured", "kaku dan sangat terstruktur")
+            .replace("is grounded and stable", "membumi dan stabil")
+            .replace("holds the ancient mystery of stars", "menyimpan misteri kuno bintang-bintang")
+            .replace("moves swiftly and changes", "bergerak cepat dan berubah-ubah")
+            .replace("strikes with sudden intensity", "menyambar dengan intensitas mendadak")
+            .replace("radiates pure purity and clarity", "memancarkan kemurnian dan kejernihan")
+            .replace("conceals secrets and movements", "menyembunyikan rahasia dan gerakan")
+            .replace("represents", "melambangkan")
+            .replace("protects its territory", "melindungi wilayahnya")
+            .replace("sovereign power", "kekuasaan berdaulat")
+            .replace("chaotic", "kacau")
+            .replace("sweet-talking", "pandai merayu")
+            .replace("rapid wealth acquisition", "meraih kekayaan dengan cepat")
+    }
+
+    // Dynamic sharing text builder based on current language
+    val shareText = remember(isFinancialUnlocked, isRomanticUnlocked, language, localizedName) {
+        val base = if (language == "EN") {
+            "🔮 My Khodam is the **$localizedName**! ✨\n" +
+            "Power: ${khodam.power}% | Mysticism: ${khodam.mysticism}%\n" +
+            "Description: ${translateDescription(khodam.description)}\n"
+        } else {
+            "🔮 Pendamping Spiritual saya adalah **$localizedName**! ✨\n" +
+            "Kekuatan: ${khodam.power}% | Kemistisan: ${khodam.mysticism}%\n" +
+            "Deskripsi: ${translateDescription(khodam.description)}\n"
+        }
+        val finTitle = if (language == "EN") "Financial" else "Keuangan"
+        val romTitle = if (language == "EN") "Romantic" else "Asmara"
+        val fin = if (isFinancialUnlocked) "$finTitle: ${translateProphecy(khodam.financial)}\n" else ""
+        val rom = if (isRomanticUnlocked) "$romTitle: ${translateProphecy(khodam.romantic)}\n" else ""
+        val footer = if (language == "EN") "Check your Khodam now at Play Store! 🔮" else "Cek Khodam Anda sekarang di Play Store! 🔮"
+        "$base$fin$rom\n$footer"
     }
 
     // Explicit package check and share dispatcher helper
@@ -160,14 +265,14 @@ fun ResultScreen(
         if (isInstalled) {
             intent.setPackage(packageName)
             context.startActivity(intent)
-            Toast.makeText(context, "Copied to clipboard & opening $label!", Toast.LENGTH_SHORT).show()
+            val toastMsg = if (language == "EN") "Copied to clipboard & opening $label!" else "Disalin ke papan klip & membuka $label!"
+            Toast.makeText(context, toastMsg, Toast.LENGTH_SHORT).show()
         } else {
-            // General share chooser fallback
             val chooser = Intent.createChooser(intent, "Share Result via")
             context.startActivity(chooser)
-            Toast.makeText(context, "$label not found. Copied to clipboard & opening share menu.", Toast.LENGTH_LONG).show()
+            val toastMsg = if (language == "EN") "$label not found. Copied to clipboard & opening share menu." else "$label tidak ditemukan. Disalin ke papan klip & membuka menu bagikan."
+            Toast.makeText(context, toastMsg, Toast.LENGTH_LONG).show()
         }
-        // Grant +5 skip credits reward
         onShareSuccess()
     }
 
@@ -188,21 +293,54 @@ fun ResultScreen(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Upper Title
-            Text(
-                text = "✨ AURA REVEALED ✨",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = CosmicGold,
-                letterSpacing = 2.sp,
-                textAlign = TextAlign.Center
-            )
+            // Upper Header with Title and Language Toggle (EN / ID)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = localizedTitle,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = CosmicGold,
+                    letterSpacing = 2.sp
+                )
 
+                // EN / ID Language Switcher Toggle on Top Right
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(GlassSurface)
+                        .border(1.dp, GlassBorder, RoundedCornerShape(8.dp))
+                        .clickable { onLanguageToggle() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "EN",
+                        color = if (language == "EN") CosmicGold else Color.Gray,
+                        fontWeight = if (language == "EN") FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 11.sp
+                    )
+                    Text(
+                        text = " / ",
+                        color = Color.Gray,
+                        fontSize = 11.sp
+                    )
+                    Text(
+                        text = "ID",
+                        color = if (language == "ID") CosmicGold else Color.Gray,
+                        fontWeight = if (language == "ID") FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 11.sp
+                    )
+                }
+            }
 
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Holographic Cosmic Card Layout
             val cardBrush = if (isFinancialUnlocked && isRomanticUnlocked) {
-                // Iridescent holographic moving sweep
                 Brush.linearGradient(
                     colors = listOf(elementColor, CosmicGold, PurpleSpark, elementColor),
                     start = Offset(sheenOffset, 0f),
@@ -226,8 +364,8 @@ fun ResultScreen(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Dynamic Image Asset loader with Emoji fallback
-                    val cleanName = khodam.name.replace(Regex("\\([^)]*\\)"), "").trim()
+                    // Dynamic Image Asset loader (uses sanitized EN clean name)
+                    val cleanName = khodam.name.replace(Regex("\\([^)]*\\)"), "").replace("  ", " ").trim()
                     val sanitizedName = cleanName.lowercase().replace(" ", "").replace("[^a-z0-9]".toRegex(), "")
                     val imageResId = remember(sanitizedName) {
                         context.resources.getIdentifier("khodam_$sanitizedName", "drawable", context.packageName)
@@ -236,7 +374,7 @@ fun ResultScreen(
                     if (imageResId != 0) {
                         Image(
                             painter = androidx.compose.ui.res.painterResource(id = imageResId),
-                            contentDescription = khodam.name,
+                            contentDescription = localizedName,
                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -265,22 +403,20 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Companion Name
+                    // Localized Companion Name
                     Text(
-                        text = khodam.name,
+                        text = localizedName,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Black,
                         color = CosmicGold,
                         textAlign = TextAlign.Center
                     )
 
-
-
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Character Description
+                    // Localized Description
                     Text(
-                        text = khodam.description,
+                        text = translateDescription(khodam.description),
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 16.sp,
@@ -289,10 +425,10 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Progress Attribute Stats
-                    AttributeRow("POWER", powerProgress.value, elementColor)
-                    AttributeRow("MYSTICISM", mysticismProgress.value, elementColor)
-                    AttributeRow("AGILITY", agilityProgress.value, elementColor)
+                    // Localized Progress Attribute Stats
+                    AttributeRow(powerLabel, powerProgress.value, elementColor)
+                    AttributeRow(mysticismLabel, mysticismProgress.value, elementColor)
+                    AttributeRow(agilityLabel, agilityProgress.value, elementColor)
                 }
             }
 
@@ -305,20 +441,22 @@ fun ResultScreen(
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     ProphecyCard(
-                        title = "💼 Financial",
-                        content = khodam.financial,
+                        title = financialCardTitle,
+                        content = translateProphecy(khodam.financial),
                         isUnlocked = isFinancialUnlocked,
                         elementColor = elementColor,
-                        onUnlockClick = { onUnlockRequest("FINANCIAL") }
+                        onUnlockClick = { onUnlockRequest("FINANCIAL") },
+                        tapToRevealLabel = tapToRevealLabel
                     )
                 }
                 Box(modifier = Modifier.weight(1f)) {
                     ProphecyCard(
-                        title = "💖 Romance",
-                        content = khodam.romantic,
+                        title = romanticCardTitle,
+                        content = translateProphecy(khodam.romantic),
                         isUnlocked = isRomanticUnlocked,
                         elementColor = elementColor,
-                        onUnlockClick = { onUnlockRequest("ROMANTIC") }
+                        onUnlockClick = { onUnlockRequest("ROMANTIC") },
+                        tapToRevealLabel = tapToRevealLabel
                     )
                 }
             }
@@ -327,9 +465,9 @@ fun ResultScreen(
 
             // Social Sharing Buttons Row
             Text(
-                text = "Share result to get +5 Skip Ad credits (Capped at 5)",
+                text = shareRewardLabel,
                 color = Color.Gray,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
@@ -346,7 +484,7 @@ fun ResultScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Try Again
+            // Check Another Name Button
             Button(
                 onClick = onReset,
                 colors = ButtonDefaults.buttonColors(containerColor = GlassSurface),
@@ -363,14 +501,14 @@ fun ResultScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Check Another Name",
+                        text = checkAnotherNameLabel,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(120.dp)) // Padding to avoid overlap with bottom banner ad
+            Spacer(modifier = Modifier.height(120.dp))
         }
     }
 }
@@ -404,7 +542,8 @@ fun ProphecyCard(
     content: String,
     isUnlocked: Boolean,
     elementColor: Color,
-    onUnlockClick: () -> Unit
+    onUnlockClick: () -> Unit,
+    tapToRevealLabel: String
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = GlassSurface),
@@ -435,7 +574,6 @@ fun ProphecyCard(
                 )
             }
 
-            // Lock Overlay if not unlocked yet
             if (!isUnlocked) {
                 Box(
                     modifier = Modifier
@@ -453,7 +591,7 @@ fun ProphecyCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Tap to Reveal",
+                            text = tapToRevealLabel,
                             color = Color.White,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold

@@ -69,12 +69,15 @@ fun MainNavigation(
                 )
             }
             is AppState.Result -> {
+                val language by viewModel.language.collectAsState()
                 ResultScreen(
                     name = currentState.name,
                     dob = currentState.dob,
                     khodam = currentState.khodam,
                     isFinancialUnlocked = currentState.isFinancialUnlocked,
                     isRomanticUnlocked = currentState.isRomanticUnlocked,
+                    language = language,
+                    onLanguageToggle = { viewModel.toggleLanguage() },
                     onUnlockRequest = { target ->
                         viewModel.requestUnlockProphecy(currentState, target)
                     },

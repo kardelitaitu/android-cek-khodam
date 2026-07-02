@@ -52,6 +52,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _appState = MutableStateFlow<AppState>(AppState.Input)
     val appState: StateFlow<AppState> = _appState.asStateFlow()
 
+    // Language localization flow (EN default)
+    private val _language = MutableStateFlow(prefs.getString("app_language", "EN") ?: "EN")
+    val language: StateFlow<String> = _language.asStateFlow()
+
+    fun toggleLanguage() {
+        val nextLang = if (_language.value == "EN") "ID" else "EN"
+        _language.value = nextLang
+        prefs.edit().putString("app_language", nextLang).apply()
+    }
+
     // Ad Manager delegation
     val adManager: AdManager = MockAdManagerImpl(
         onCreditsChanged = { credits ->
