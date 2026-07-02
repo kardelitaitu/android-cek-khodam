@@ -535,10 +535,22 @@ fun WheelSelector(
 ) {
     val listState = rememberLazyListState()
     
+    // Auto-scroll to selected item when updated externally (e.g., dialog initialization)
     LaunchedEffect(selectedItem) {
         val index = items.indexOf(selectedItem)
-        if (index >= 0) {
-            listState.animateScrollToItem(index)
+        if (index >= 0 && index != listState.firstVisibleItemIndex) {
+            listState.scrollToItem(index)
+        }
+    }
+
+    // Auto-snap to the closest item and select it when the user stops dragging/scrolling
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (!listState.isScrollInProgress) {
+            val closestIndex = listState.firstVisibleItemIndex
+            if (closestIndex in items.indices) {
+                listState.animateScrollToItem(closestIndex)
+                onItemSelected(items[closestIndex])
+            }
         }
     }
 
