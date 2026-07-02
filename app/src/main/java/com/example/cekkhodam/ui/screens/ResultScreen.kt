@@ -425,10 +425,17 @@ fun ResultScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Localized Progress Attribute Stats
-                    AttributeRow(powerLabel, powerProgress.value, elementColor)
-                    AttributeRow(mysticismLabel, mysticismProgress.value, elementColor)
-                    AttributeRow(agilityLabel, agilityProgress.value, elementColor)
+                    // Side-by-Side Stat Boxes to reduce height and make room for the large image
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        StatBox(label = powerLabel, progress = powerProgress.value, color = elementColor, modifier = Modifier.weight(1f))
+                        StatBox(label = mysticismLabel, progress = mysticismProgress.value, color = elementColor, modifier = Modifier.weight(1f))
+                        StatBox(label = agilityLabel, progress = agilityProgress.value, color = elementColor, modifier = Modifier.weight(1f))
+                    }
                 }
             }
 
@@ -509,6 +516,35 @@ fun ResultScreen(
             }
 
             Spacer(modifier = Modifier.height(120.dp))
+        }
+    }
+}
+
+@Composable
+fun StatBox(label: String, progress: Float, color: Color, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color.White.copy(alpha = 0.05f))
+            .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(10.dp))
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = label,
+                color = Color.LightGray,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "${(progress * 100).toInt()}%",
+                color = color,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Black
+            )
         }
     }
 }
