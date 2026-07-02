@@ -198,13 +198,7 @@ fun ResultScreen(
                 textAlign = TextAlign.Center
             )
 
-            Text(
-                text = "Calculated for $name",
-                color = Color.LightGray,
-                fontSize = 11.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
-            )
+
 
             // Holographic Cosmic Card Layout
             val cardBrush = if (isFinancialUnlocked && isRomanticUnlocked) {
