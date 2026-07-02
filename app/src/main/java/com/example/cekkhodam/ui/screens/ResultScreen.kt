@@ -343,18 +343,18 @@ fun ResultScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Holographic Cosmic Card Layout
-            val cardBrush = if (isFinancialUnlocked && isRomanticUnlocked) {
-                Brush.linearGradient(
-                    colors = listOf(elementColor, CosmicGold, PurpleSpark, elementColor),
-                    start = Offset(sheenOffset, 0f),
-                    end = Offset(sheenOffset + 300f, 400f)
-                )
-            } else {
-                Brush.linearGradient(
-                    colors = listOf(elementColor, elementColor.copy(alpha = 0.5f))
-                )
-            }
+            // Shifting holographic cosmic rainbow outline ring
+            val cardBrush = Brush.linearGradient(
+                colors = listOf(
+                    elementColor,
+                    CosmicGold,
+                    PurpleSpark,
+                    Color(0xFF00E5FF), // Cyber Cyan/Rainbow mint
+                    elementColor
+                ),
+                start = Offset(sheenOffset, sheenOffset),
+                end = Offset(sheenOffset + 500f, sheenOffset + 500f)
+            )
 
             Card(
                 colors = CardDefaults.cardColors(containerColor = GlassSurface),
