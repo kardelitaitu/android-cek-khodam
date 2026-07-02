@@ -243,10 +243,12 @@ fun ResultScreen(
                         Image(
                             painter = androidx.compose.ui.res.painterResource(id = imageResId),
                             contentDescription = khodam.name,
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .border(1.dp, elementColor.copy(alpha = 0.5f), CircleShape)
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(1.dp, elementColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                         )
                     } else {
                         val emoji = when (khodam.category) {
@@ -256,13 +258,14 @@ fun ResultScreen(
                         }
                         Box(
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(elementColor.copy(alpha = 0.2f))
-                                .border(1.dp, elementColor.copy(alpha = 0.5f), CircleShape),
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(elementColor.copy(alpha = 0.15f))
+                                .border(1.dp, elementColor.copy(alpha = 0.4f), RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = emoji, fontSize = 32.sp)
+                            Text(text = emoji, fontSize = 64.sp)
                         }
                     }
 
