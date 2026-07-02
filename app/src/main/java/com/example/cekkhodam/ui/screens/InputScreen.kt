@@ -100,22 +100,30 @@ fun InputScreen(
 
     DisposableEffect(Unit) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
         val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
-                if (event != null && event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                    // event.values[0] is X-axis tilt (left/right)
-                    // event.values[1] is Y-axis tilt (up/down)
-                    // Low-pass filter to smooth the tilt values
+                if (event == null) return
+                if (event.sensor.type == Sensor.TYPE_GYROSCOPE) {
+                    // event.values[0] measures pitch rate (up/down)
+                    // event.values[1] measures yaw rate (left/right)
+                    // Integrate angular rate with decay to center naturally when static
+                    tiltX = (tiltX + event.values[1] * 0.25f).coerceIn(-15f, 15f) * 0.97f
+                    tiltY = (tiltY + event.values[0] * 0.25f).coerceIn(-15f, 15f) * 0.97f
+                } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER && gyroscope == null) {
+                    // Fallback to accelerometer for cheap devices
                     tiltX = tiltX * 0.9f + event.values[0] * 0.1f
-                    tiltY = tiltY * 0.9f + event.values[1] * 0.1f
+                    tiltY = tiltY * 0.9f + (event.values[1] - 5f) * 0.1f
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
         
-        if (accelerometer != null) {
+        if (gyroscope != null) {
+            sensorManager.registerListener(listener, gyroscope, SensorManager.SENSOR_DELAY_GAME)
+        } else if (accelerometer != null) {
             sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
         }
         
@@ -225,10 +233,9 @@ fun InputScreen(
                     val alphaVal = pulseAlpha
                     val progress = driftOffset
                     
-                    // VR-like panning shifts the center of travel direction dynamically based on device tilt
-                    val centerX = size.width / 2f - tiltX * 16.dp.toPx()
-                    // Calibrate Y with a typical 5.0 tilt baseline for a hand-held angle
-                    val centerY = size.height / 2f + (tiltY - 5f) * 16.dp.toPx()
+                    // VR-like panning shifts the center of travel direction dynamically based on device rotation
+                    val centerX = size.width / 2f - tiltX * 18.dp.toPx()
+                    val centerY = size.height / 2f - tiltY * 18.dp.toPx()
                     
                     // Maximum distance from center to screen corner from the current shifted origin
                     val maxRadius = java.lang.Math.hypot(centerX.toDouble(), centerY.toDouble()).toFloat()
