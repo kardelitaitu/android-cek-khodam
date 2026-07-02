@@ -69,6 +69,13 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.random.Random
 
+data class WarpStar(
+    val angle: Float,
+    val speed: Float,
+    val distanceOffset: Float,
+    val color: Color
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputScreen(
@@ -117,13 +124,24 @@ fun InputScreen(
         }
     }
 
+    val starColors = remember {
+        listOf(
+            Color.White,
+            Color(0xFF80DEEA), // Cyber Cyan
+            Color(0xFFFFE082), // Cosmic Amber Gold
+            Color(0xFFE1BEE7), // Soft Cosmic Violet
+            Color(0xFF90CAF9)  // Deep Sky Blue
+        )
+    }
+
     // Stars background generation (3D radial starfield: angle, speed depth, start distance)
     val stars = remember {
-        List(60) {
-            Triple(
-                Random.nextFloat() * 2f * Math.PI.toFloat(), // angle
-                0.4f + Random.nextFloat() * 0.6f,            // speed
-                Random.nextFloat()                           // distanceOffset
+        List(120) {
+            WarpStar(
+                angle = Random.nextFloat() * 2f * Math.PI.toFloat(),
+                speed = 0.3f + Random.nextFloat() * 0.9f,
+                distanceOffset = Random.nextFloat(),
+                color = starColors[Random.nextInt(starColors.size)]
             )
         }
     }
@@ -213,35 +231,49 @@ fun InputScreen(
                     // Maximum distance from center to screen corner from the current shifted origin
                     val maxRadius = java.lang.Math.hypot(centerX.toDouble(), centerY.toDouble()).toFloat()
 
-                    stars.forEach { (angle, speed, distanceOffset) ->
+                    stars.forEach { star ->
                         // Calculate radial progress distance from center (0f to 1f)
-                        val distance = ((distanceOffset + progress * speed) % 1.0f)
+                        val distance = ((star.distanceOffset + progress * star.speed) % 1.0f)
                         
-                        // Radial coordinates expansion outward
-                        val x = centerX + kotlin.math.cos(angle.toDouble()).toFloat() * distance * maxRadius
-                        val y = centerY + kotlin.math.sin(angle.toDouble()).toFloat() * distance * maxRadius
+                        // Tail length stretches based on speed (warp motion blur effect)
+                        val tailLength = 0.05f * star.speed
+                        val startDistance = (distance - tailLength).coerceAtLeast(0f)
+                        val endDistance = distance
+
+                        // Coordinates for start (tail) and end (core/head) of the streak
+                        val startX = centerX + kotlin.math.cos(star.angle.toDouble()).toFloat() * startDistance * maxRadius
+                        val startY = centerY + kotlin.math.sin(star.angle.toDouble()).toFloat() * startDistance * maxRadius
                         
-                        // Star grows larger and brighter as it approaches
-                        val radius = 1.dp.toPx() + 3.dp.toPx() * distance
-                        val starAlpha = alphaVal * distance
-                        
-                        // 1. Large Outer Bloom Halo (low opacity, wide radius)
-                        drawCircle(
-                            color = Color.White.copy(alpha = (starAlpha * 0.12f).coerceIn(0f, 1f)),
-                            radius = radius * 3.5f,
-                            center = Offset(x, y)
+                        val endX = centerX + kotlin.math.cos(star.angle.toDouble()).toFloat() * endDistance * maxRadius
+                        val endY = centerY + kotlin.math.sin(star.angle.toDouble()).toFloat() * endDistance * maxRadius
+
+                        // Thickness of warp streak scales up as it gets closer
+                        val strokeWidth = (1.dp.toPx() + 3.dp.toPx() * endDistance)
+                        val starAlpha = alphaVal * endDistance
+
+                        // 1. Outer Wide Glow Streak (high bloom, low opacity)
+                        drawLine(
+                            color = star.color.copy(alpha = (starAlpha * 0.15f).coerceIn(0f, 1f)),
+                            start = Offset(startX, startY),
+                            end = Offset(endX, endY),
+                            strokeWidth = strokeWidth * 2.8f,
+                            cap = androidx.compose.ui.graphics.StrokeCap.Round
                         )
-                        // 2. Medium Inner Bloom Glow (medium opacity, mid radius)
-                        drawCircle(
-                            color = Color.White.copy(alpha = (starAlpha * 0.3f).coerceIn(0f, 1f)),
-                            radius = radius * 1.8f,
-                            center = Offset(x, y)
+                        // 2. Inner Medium Glow Streak
+                        drawLine(
+                            color = star.color.copy(alpha = (starAlpha * 0.4f).coerceIn(0f, 1f)),
+                            start = Offset(startX, startY),
+                            end = Offset(endX, endY),
+                            strokeWidth = strokeWidth * 1.6f,
+                            cap = androidx.compose.ui.graphics.StrokeCap.Round
                         )
-                        // 3. Main Star Core (solid brightness)
-                        drawCircle(
+                        // 3. Core Intense Star Streak (solid core)
+                        drawLine(
                             color = Color.White.copy(alpha = starAlpha.coerceIn(0f, 1f)),
-                            radius = radius,
-                            center = Offset(x, y)
+                            start = Offset(startX, startY),
+                            end = Offset(endX, endY),
+                            strokeWidth = strokeWidth,
+                            cap = androidx.compose.ui.graphics.StrokeCap.Round
                         )
                     }
                 }
