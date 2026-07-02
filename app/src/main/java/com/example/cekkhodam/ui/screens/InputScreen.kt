@@ -167,8 +167,10 @@ fun InputScreen(
                     val progress = driftOffset
                     val alpha = pulseAlpha
                     stars.forEach { (offset, scale) ->
-                        val x = offset.x * size.width
-                        val y = ((offset.y + progress * (0.3f + scale * 0.7f)) % 1.0f) * size.height
+                        // Parallax horizontal drift (right-to-left) to simulate forward/sideways space flight
+                        val x = ((offset.x - progress * (0.3f + scale * 0.7f) + 1.0f) % 1.0f) * size.width
+                        // Subtle vertical drift to create a smooth diagonal glide path
+                        val y = ((offset.y - progress * 0.05f * (0.3f + scale * 0.7f) + 1.0f) % 1.0f) * size.height
                         drawCircle(
                             color = Color.White.copy(alpha = alpha * scale),
                             radius = 2.dp.toPx() * scale,
