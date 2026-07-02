@@ -75,9 +75,9 @@ gantt
 ### Phase 5: Local AI Image Generation (ComfyUI)
 * **Dates**: 9 – 10 July 2026
 * **Checklist**:
-  - [ ] Setup ComfyUI workflow for Flux.1 or SDXL with batch size = 4.
-  - [ ] Input element prompts, generate 4 variants, and select the best one.
-  - [ ] Input joke/flower prompts, generate, and select the best ones.
+  - [x] Configure 4-batch workflows for SDXL/Flux in ComfyUI.
+  - [x] Set up visual prompt matrices combining elements (10), beasts (30), joke items (50), and flowers (100).
+  - [ ] Crop and compress generated output images to 512x512 WebP formats and save in drawable resources.
   - [ ] Resize all selected images to square 512x512, export as WebP assets, and add to drawables repository.
 
 ### Phase 6: Polish, Shaders, & Launch
